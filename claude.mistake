@@ -1,0 +1,23 @@
+# Claude Mistake Log
+# Read at session start. Avoid every pattern below.
+# On recurrence, increment "Repeat count" instead of adding a duplicate.
+# At repeat count 2+, stop and change approach.
+#
+# Format:
+# ## <short title>
+# - Date:
+# - What went wrong:
+# - Root cause:
+# - Fix:
+# - How to avoid:
+# - Repeat count: 1
+
+(no entries yet)
+
+## Fleet ship hull overlapped sand on sloped shore
+- Date: 2026-11-03
+- What went wrong: fleet ships clamped to water using shore() at the ship's centre x only; their ~40px half-length hull reached over the sand where the shore rises on the right.
+- Root cause: copied the original cruise clamp (centre sample) for ships that get close to the shoreline.
+- Fix: clamp y with the highest shore point sampled at x-40, x, x+40 (margin 21).
+- How to avoid: when a wide sprite follows a sloped boundary, sample the boundary across the sprite's full extent, not just its anchor.
+- Repeat count: 1

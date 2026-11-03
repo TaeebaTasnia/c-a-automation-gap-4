@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carrier Allocation &amp; Utilization</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f3f5fa;--card:#ffffff;--ink:#1b2234;--mute:#6a7389;--line:#e2e6ef;--head:#f0f3fa;
+  --accent:#2457d6;--good:#14803c;--goodbg:#e4f5ea;--bad:#c62828;--badbg:#fde9e9;--warn:#a85f00;--warnbg:#fff3df;
+  --inbg:#fbfcff;--shadow:0 1px 2px rgba(20,30,60,.06),0 4px 14px rgba(20,30,60,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#10141f;--card:#181e2d;--ink:#e8ecf6;--mute:#94a0ba;--line:#283049;--head:#1f2638;
+  --accent:#6b94ff;--good:#4cc27a;--goodbg:#15301f;--bad:#ff7b7b;--badbg:#3a1a1d;--warn:#f0b04a;--warnbg:#38290f;--inbg:#141a28;--shadow:none;}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,select,input{font:inherit;color:inherit}
+.top{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
+.top h1{margin:0;font-size:18px;letter-spacing:.2px}
+.sub{color:var(--mute);font-size:12.5px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select,.btn{border:1px solid var(--line);background:var(--inbg);border-radius:8px;padding:6px 10px;cursor:pointer}
+.btn:hover,select:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.pill{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--head);color:var(--mute)}
+.pill.saved{background:var(--goodbg);color:var(--good)}
+.pill.dirty,.pill.saving{background:var(--warnbg);color:var(--warn)}
+.pill.error{background:var(--badbg);color:var(--bad)}
+main{max-width:1500px;margin:0 auto;padding:18px 20px 60px;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 small{font-weight:400;color:var(--mute)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+.kpi .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--mute)}
+.kpi .v{font-size:28px;font-weight:700;margin:2px 0;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--mute)}
+.kpi.good .v{color:var(--good)}.kpi.bad .v{color:var(--bad)}
+.ccards{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.cc{border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:12px 14px;background:var(--inbg)}
+.cc .n{font-weight:700;letter-spacing:.4px;display:flex;justify-content:space-between;align-items:center}
+.cc .big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;margin:4px 0 2px}
+.cc dl{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin:8px 0 0;font-size:12.5px}
+.cc dt{color:var(--mute)}.cc dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .3s}
+.chip{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600}
+.chip.good{background:var(--goodbg);color:var(--good)}.chip.bad{background:var(--badbg);color:var(--bad)}.chip.neutral{background:var(--head);color:var(--mute)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:18px}
+.chartbox{position:relative;height:260px}
+.chartfail{display:none;color:var(--mute)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:5px 8px;text-align:center;white-space:nowrap}
+thead th{background:var(--head);font-size:12px;letter-spacing:.3px}
+thead th.car{color:#fff}
+td.calc{background:var(--head);font-weight:600}
+td.in{padding:2px}
+td.in input{width:68px;border:1px solid transparent;background:var(--inbg);border-radius:6px;padding:5px 6px;text-align:center}
+td.in input:focus{outline:2px solid var(--accent);border-color:transparent;background:var(--card)}
+td.in input.wide{width:84px}
+tbody tr.sel td{background:rgba(36,87,214,.08)}
+tbody tr.sel td.calc{background:rgba(36,87,214,.14)}
+tbody tr.today td{background:var(--warnbg)}
+tr.clickable td:first-child{cursor:pointer;font-weight:700;color:var(--accent)}
+tfoot td{background:var(--head);font-weight:600}
+tfoot td.lab{text-align:left;font-size:12px;letter-spacing:.4px}
+.neg{color:var(--bad);font-weight:700}.pos{color:var(--good);font-weight:700}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.toolbar input{width:70px;border:1px solid var(--line);background:var(--inbg);border-radius:8px;padding:6px 8px;text-align:center}
+.xbtn{border:0;background:none;color:var(--mute);cursor:pointer;padding:4px 8px;border-radius:6px}
+.xbtn:hover{background:var(--badbg);color:var(--bad)}.xbtn.armed{background:var(--bad);color:#fff}
+.muted{color:var(--mute)}
+.empty{padding:26px;text-align:center;color:var(--mute)}
+#modal{position:fixed;inset:0;background:rgba(10,15,30,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#modal.open{display:flex}
+.dlg{background:var(--card);border-radius:14px;padding:20px;width:min(480px,100%);max-height:92vh;overflow:auto;border:1px solid var(--line)}
+.dlg h3{margin:0 0 4px}
+.frow{display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:center;margin:8px 0}
+.frow input{border:1px solid var(--line);background:var(--inbg);border-radius:8px;padding:6px 8px;text-align:right;width:100%}
+.dlg .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#222a40;color:#fff;padding:9px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}
+#toast.show{opacity:1}
+@media (max-width:640px){.top{padding:10px 12px}main{padding:12px 10px 50px}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Carrier Allocation &amp; Utilization</h1>
+    <div class="sub" id="subtitle">Loading…</div>
+  </div>
+  <div class="tools">
+    <select id="yearSel" title="Year"></select>
+    <select id="weekSel" title="Week"></select>
+    <button class="btn" id="btnCurrent">Current week</button>
+    <span class="pill" id="saveState">Loading…</span>
+    <button class="btn" id="btnRefresh" title="Reload from sheet">↻ Refresh</button>
+    <button class="btn" id="btnExport">⬇ Export</button>
+    <button class="btn" id="btnSettings">⚙ Settings</button>
+  </div>
+</header>
+
+<main>
+  <section class="kpis" id="kpis"></section>
+
+  <section class="card">
+    <h2>Carrier status <small id="ccLabel"></small></h2>
+    <div class="ccards" id="carrierCards"></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>Weekly overview <small>forecast vs confirmed vs utilized (TEUs)</small></h2>
+      <div class="chartbox"><canvas id="chWeekly"></canvas><div class="chartfail">Chart library could not load (check internet / network policy).</div></div>
+    </div>
+    <div class="card">
+      <h2>Selected week by carrier <small>TEUs</small></h2>
+      <div class="chartbox"><canvas id="chCarrier"></canvas><div class="chartfail">Chart library could not load (check internet / network policy).</div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>1 · Weekly allocation <small>enter total forecast, confirmed &amp; (if no daily data) utilized — grey cells are automatic</small></h2>
+    <div class="toolbar">
+      <span class="muted">Add week:</span>
+      <input id="addWeekNo" inputmode="numeric" placeholder="Wk #">
+      <button class="btn primary" id="btnAddWeek">+ Add</button>
+    </div>
+    <div class="scroll"><table id="tblWeekly"></table></div>
+  </section>
+
+  <section class="card">
+    <h2>2 · Weekly summary <small>deficit / surplus = (confirmed − utilized) − still to arrive</small></h2>
+    <div class="scroll"><table id="tblSummary"></table></div>
+  </section>
+
+  <section class="card">
+    <h2 id="dailyTitle">3 · Date-wise utilization</h2>
+    <div class="scroll"><table id="tblDaily"></table></div>
+  </section>
+
+  <section class="card">
+    <h2>4 · Export data <small>pick a week range and download the weekly summary plus every date-wise row (opens in Excel)</small></h2>
+    <div class="toolbar" id="exportBox"></div>
+  </section>
+</main>
+
+<div id="modal"><div class="dlg" id="dlg"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ================== constants & state ================== */
+const CARRIERS = [
+  {id:'maersk', name:'MAERSK',  color:'#1f8fc4'},
+  {id:'hapag',  name:'HAPAG',   color:'#e07b00'},
+  {id:'hellman',name:'HELLMAN', color:'#2e8a5f'},
+  {id:'one',    name:'ONE',     color:'#c81e78'},
+  {id:'fml',    name:'FML',     color:'#5f6577'}
+];
+const ALLOC = CARRIERS.slice(0,4);               // carriers that get a % of the forecast
+const WEEKLY_KEYS = ['year','week','forecast','fml_fcst'].concat(...CARRIERS.map(c=>[c.id+'_conf', c.id+'_util']));
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DEFAULT_CFG = {cbmPerTeu:33, fmlDefault:10, pct_maersk:30, pct_hapag:25, pct_hellman:20, pct_one:25};
+
+const S = {
+  cfg:{...DEFAULT_CFG}, weekly:[], daily:{},
+  sel:{year:0, week:0},
+  dirtyW:new Set(), dirtyD:new Set(), armedDel:null, loaded:false,
+  exp:{from:0,to:0}
+};
+
+/* ================== tiny helpers ================== */
+const $ = id => document.getElementById(id);
+const num = v => (v===''||v==null||isNaN(Number(v))) ? 0 : Number(v);
+const fmt = (n,d=0) => Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pctTxt = p => p==null ? '—' : Math.round(p*100)+'%';
+const signed = n => { const r=Math.round(n); return r===0?'0':(r<0?'−':'+')+fmt(Math.abs(r)); };
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2600);}
+
+function pad(n){return String(n).padStart(2,'0');}
+function todayStr(){const t=new Date();return t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());}
+function fmtDate(s){const [y,m,d]=s.split('-');return d+'-'+MONTHS[Number(m)-1]+'-'+y.slice(2);}
+function dowName(s){const [y,m,d]=s.split('-').map(Number);return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(Date.UTC(y,m-1,d)).getUTCDay()];}
+function isoWeekOf(s){
+  const [y,m,d]=s.split('-').map(Number);
+  const dt=new Date(Date.UTC(y,m-1,d)); const day=dt.getUTCDay()||7;
+  dt.setUTCDate(dt.getUTCDate()+4-day);
+  const ys=new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+  return {year:dt.getUTCFullYear(), week:Math.ceil(((dt-ys)/86400000+1)/7)};
+}
+function weekDates(year,week){            // Monday → Sunday (ISO weeks)
+  const jan4=new Date(Date.UTC(year,0,4)); const dow=jan4.getUTCDay()||7;
+  const mon=new Date(jan4); mon.setUTCDate(jan4.getUTCDate()-(dow-1)+(week-1)*7);
+  return Array.from({length:7},(_,i)=>{const x=new Date(mon);x.setUTCDate(mon.getUTCDate()+i);return x.toISOString().slice(0,10);});
+}
+const wkKey = w => w.year+'-'+w.week;
+function newWeek(year,week){
+  const w={year,week,forecast:'',fml_fcst:S.cfg.fmlDefault};
+  CARRIERS.forEach(c=>{w[c.id+'_conf']='';w[c.id+'_util']='';});
+  return w;
+}
+
+/* ================== business logic ================== */
+// Split the weekly TEU forecast by carrier % (each share rounded to a whole TEU).
+function allocate(total){
+  const out={};
+  ALLOC.forEach(c => out[c.id] = Math.round(total*num(S.cfg['pct_'+c.id])/100));
+  return out;
+}
+
+function calcWeek(w){
+  const cpt = num(S.cfg.cbmPerTeu)||33;
+  const dates = weekDates(w.year,w.week);
+  const days = dates.map(d=>S.daily[d]||{});
+  const fc = allocate(num(w.forecast)); fc.fml = num(w.fml_fcst);
+  const conf={},util={},left={},dsum={},fromDaily={},pct={},share={};
+  let totalConf=0,totalUtil=0;
+  CARRIERS.forEach(c=>{
+    conf[c.id]=num(w[c.id+'_conf']);
+    dsum[c.id]=days.reduce((a,d)=>a+num(d[c.id]),0);
+    fromDaily[c.id]=dsum[c.id]>0;
+    util[c.id]=fromDaily[c.id]?dsum[c.id]:num(w[c.id+'_util']);
+    left[c.id]=conf[c.id]-util[c.id];
+    totalConf+=conf[c.id]; totalUtil+=util[c.id];
+  });
+  CARRIERS.forEach(c=>{
+    pct[c.id]=conf[c.id]>0?util[c.id]/conf[c.id]:null;
+    share[c.id]=totalUtil>0?util[c.id]/totalUtil:null;
+  });
+  const fcstCbm=days.reduce((a,d)=>a+num(d.fcstCbm),0);
+  const actCbm =days.reduce((a,d)=>a+num(d.actCbm),0);
+  const basis  = fcstCbm>0 ? fcstCbm/cpt : num(w.forecast);   // daily CBM plan wins when entered
+  const actTeu = actCbm/cpt;
+  const toBeArrived = Math.max(0,basis-actTeu);
+  const leftTotal = totalConf-totalUtil;
+  return {
+    dates,fc,conf,util,left,dsum,fromDaily,pct,share,totalConf,totalUtil,leftTotal,
+    fcstCbm,actCbm,basis,actTeu,toBeArrived,
+    deficit:leftTotal-toBeArrived,
+    cbmPlan:num(w.forecast)*cpt,
+    utilPct:totalConf>0?totalUtil/totalConf:null,
+    vsForecast:num(w.forecast)>0?totalUtil/num(w.forecast):null
+  };
+}
+
+const weeksOfYear = () => S.weekly.filter(w=>Number(w.year)===S.sel.year).sort((a,b)=>a.week-b.week);
+const selWeek = () => S.weekly.find(w=>Number(w.year)===S.sel.year&&Number(w.week)===S.sel.week)||null;
+
+/* ================== server API (with local preview fallback) ================== */
+const MOCK = (function(){
+  let mem=null;
+  const load=()=>{ if(mem) return mem; try{mem=JSON.parse(localStorage.getItem('cat_db'));}catch(e){} return mem=mem||{config:{...DEFAULT_CFG},weekly:[],daily:[]}; };
+  const save=()=>{ try{localStorage.setItem('cat_db',JSON.stringify(mem));}catch(e){} };
+  return {
+    api_getAll:()=>({...load(),serverTime:new Date().toISOString()}),
+    api_saveConfig:c=>{load().config={...DEFAULT_CFG,...c};save();return load().config;},
+    api_saveWeekly:rows=>{const d=load();rows.forEach(r=>{const i=d.weekly.findIndex(x=>x.year==r.year&&x.week==r.week);i<0?d.weekly.push(r):d.weekly[i]=r;});save();return true;},
+    api_deleteWeek:(y,w)=>{const d=load();d.weekly=d.weekly.filter(x=>!(x.year==y&&x.week==w));save();return true;},
+    api_saveDaily:rows=>{const d=load();rows.forEach(r=>{const i=d.daily.findIndex(x=>x.date==r.date);i<0?d.daily.push(r):d.daily[i]=r;});save();return true;}
+  };
+})();
+function api(fn,...args){
+  return new Promise((resolve,reject)=>{
+    if(window.google&&google.script&&google.script.run){
+      google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(new Error((e&&e.message)||String(e))))[fn](...args);
+    }else{
+      setTimeout(()=>{try{resolve(JSON.parse(JSON.stringify(MOCK[fn](...JSON.parse(JSON.stringify(args))))));}catch(e){reject(e);}},60);
+    }
+  });
+}
+
+/* ================== saving ================== */
+let saveTimer=null,saving=false;
+function setState(kind,msg){
+  const el=$('saveState');el.className='pill '+kind;
+  el.textContent={saved:'✓ All changes saved',dirty:'● Unsaved changes…',saving:'Saving…',error:'⚠ Save failed',loading:'Loading…'}[kind]||msg;
+  if(kind==='error'&&msg) el.title=msg;
+}
+function schedule(){setState('dirty');clearTimeout(saveTimer);saveTimer=setTimeout(flush,1100);}
+function markW(w){S.dirtyW.add(wkKey(w));schedule();}
+function markD(date){S.dirtyD.add(date);schedule();}
+async function flush(){
+  if(saving){schedule();return;}
+  const wk=[...S.dirtyW],dk=[...S.dirtyD];
+  if(!wk.length&&!dk.length) return;
+  saving=true;setState('saving');S.dirtyW.clear();S.dirtyD.clear();
+  let failed=false;
+  try{
+    if(wk.length) await api('api_saveWeekly',wk.map(k=>S.weekly.find(w=>wkKey(w)===k)).filter(Boolean));
+    if(dk.length) await api('api_saveDaily',dk.map(d=>S.daily[d]).filter(Boolean));
+  }catch(e){
+    failed=true;wk.forEach(k=>S.dirtyW.add(k));dk.forEach(d=>S.dirtyD.add(d));setState('error',e.message);toast('Save failed: '+e.message);
+  }
+  saving=false;
+  if(!failed) setState(S.dirtyW.size||S.dirtyD.size?'dirty':'saved');
+}
+window.addEventListener('beforeunload',e=>{if(S.dirtyW.size||S.dirtyD.size){e.preventDefault();e.returnValue='';}});
+
+/* ================== rendering ================== */
+function inp(k,id,f,val,cls=''){
+  return `<td class="in"><input class="${cls}" type="text" inputmode="decimal" autocomplete="off" data-k="${k}" data-id="${id}" data-f="${f}" data-fid="${k}|${id}|${f}" value="${val===''||val==null?'':val}"></td>`;
+}
+function renderAll(){
+  const a=document.activeElement;
+  const fid=a&&a.dataset?a.dataset.fid:null;
+  let pos=null;try{pos=a.selectionStart;}catch(e){}
+  renderTop();renderKpis();renderCarrierCards();renderCharts();renderWeeklyTable();renderSummary();renderDaily();renderExport();
+  if(fid){const el=document.querySelector(`[data-fid="${fid}"]`);if(el){el.focus();try{el.setSelectionRange(pos,pos);}catch(e){}}}
+}
+
+function renderTop(){
+  const years=new Set(S.weekly.map(w=>Number(w.year)));years.add(S.sel.year);years.add(isoWeekOf(todayStr()).year);
+  $('yearSel').innerHTML=[...years].sort().map(y=>`<option ${y===S.sel.year?'selected':''}>${y}</option>`).join('');
+  const ws=weeksOfYear();
+  $('weekSel').innerHTML=ws.length?ws.map(w=>`<option value="${w.week}" ${w.week===S.sel.week?'selected':''}>Week ${w.week}</option>`).join(''):'<option value="">No weeks</option>';
+  const w=selWeek();
+  if(w){const d=weekDates(w.year,w.week);$('subtitle').textContent=`Week ${w.week} · ${fmtDate(d[0])} → ${fmtDate(d[6])} · 1 TEU = ${S.cfg.cbmPerTeu} CBM`;}
+  else $('subtitle').textContent='Add a week below to start tracking';
+}
+
+function kpi(label,value,sub,cls=''){return `<div class="kpi ${cls}"><div class="l">${label}</div><div class="v">${value}</div><div class="s">${sub}</div></div>`;}
+function bar(p,color){const w=p==null?0:Math.min(100,p*100);return `<div class="bar"><i style="width:${w}%;background:${p>1?'var(--bad)':color}"></i></div>`;}
+
+function renderKpis(){
+  const w=selWeek();
+  if(!w){$('kpis').innerHTML='';return;}
+  const c=calcWeek(w),cpt=num(S.cfg.cbmPerTeu)||33,today=todayStr();
+  const inWeek=c.dates.includes(today);
+  const td=S.daily[today]||{};
+  const todayTeu=CARRIERS.reduce((a,x)=>a+num(td[x.id]),0);
+  const defCls=c.deficit<-0.5?'bad':(c.deficit>0.5?'good':'');
+  const defSub=c.deficit<-0.5?'Deficit – more space needed':(c.deficit>0.5?'Surplus – space in hand':'Balanced');
+  const todayCard=inWeek
+    ? kpi('Today',`${fmt(todayTeu)} <span style="font-size:14px;font-weight:500">TEU used</span>`,`Actual ${fmt(num(td.actCbm))} CBM (${fmt(num(td.actCbm)/cpt,1)} TEU) vs forecast ${fmt(num(td.fcstCbm))} CBM`)
+    : kpi('Week CBM',fmt(c.actCbm),`Actual vs ${fmt(c.fcstCbm)} CBM forecast${c.fcstCbm>0?' ('+pctTxt(c.actCbm/c.fcstCbm)+')':''}`);
+  $('kpis').innerHTML=
+    kpi('Forecast (TEUs +25%)',fmt(num(w.forecast)),`${fmt(c.cbmPlan)} CBM equivalent`)+
+    kpi('Confirmed',fmt(c.totalConf),`${signed(c.totalConf-num(w.forecast))} vs forecast`)+
+    kpi('Utilized',fmt(c.totalUtil),`${pctTxt(c.utilPct)} of confirmed · ${pctTxt(c.vsForecast)} of forecast`)+
+    kpi('Left in hand',fmt(c.leftTotal),'Confirmed − utilized',c.leftTotal<0?'bad':'')+
+    kpi('To be arrived',fmt(c.toBeArrived),`Plan ${fmt(c.basis,1)} − arrived ${fmt(c.actTeu,1)} TEU`)+
+    kpi('Deficit / Surplus',signed(c.deficit),defSub,defCls)+
+    todayCard;
+}
+
+function renderCarrierCards(){
+  const w=selWeek();
+  if(!w){$('carrierCards').innerHTML='<div class="empty">No week selected.</div>';$('ccLabel').textContent='';return;}
+  const c=calcWeek(w);
+  $('ccLabel').textContent=`Week ${w.week}`;
+  $('carrierCards').innerHTML=CARRIERS.map(k=>{
+    const diff=c.conf[k.id]-c.fc[k.id];
+    const chip=diff<0?`<span class="chip bad">${signed(diff)} vs fcst</span>`:(diff>0?`<span class="chip good">${signed(diff)} vs fcst</span>`:`<span class="chip neutral">on forecast</span>`);
+    const target=k.id==='fml'?'':` (target ${S.cfg['pct_'+k.id]}%)`;
+    return `<div class="cc" style="--c:${k.color}">
+      <div class="n"><span>${k.name}</span>${chip}</div>
+      <div class="big">${pctTxt(c.pct[k.id])} <span class="muted" style="font-size:12px;font-weight:500">utilized</span></div>
+      ${bar(c.pct[k.id],k.color)}
+      <dl><dt>Forecast</dt><dd>${fmt(c.fc[k.id])}</dd><dt>Confirmed</dt><dd>${fmt(c.conf[k.id])}</dd>
+      <dt>Utilized</dt><dd>${fmt(c.util[k.id])}</dd><dt>Left</dt><dd class="${c.left[k.id]<0?'neg':''}">${fmt(c.left[k.id])}</dd>
+      <dt>Share of used${target}</dt><dd>${pctTxt(c.share[k.id])}</dd></dl></div>`;
+  }).join('');
+}
+
+let chW=null,chC=null;
+function renderCharts(){
+  if(typeof Chart==='undefined'){
+    document.querySelectorAll('.chartbox canvas').forEach(e=>e.style.display='none');
+    document.querySelectorAll('.chartfail').forEach(e=>e.style.display='block');return;
+  }
+  const css=getComputedStyle(document.body);
+  Chart.defaults.color=css.getPropertyValue('--mute').trim();
+  Chart.defaults.borderColor=css.getPropertyValue('--line').trim();
+  const ws=weeksOfYear();
+  const dsW=[['Forecast','#9aa3b8',w=>num(w.forecast),null],['Confirmed','#2457d6',w=>calcWeek(w).totalConf],['Utilized','#17a05d',w=>calcWeek(w).totalUtil]];
+  const dataW={labels:ws.map(w=>'W'+w.week),datasets:dsW.map(d=>({label:d[0],backgroundColor:d[1],borderRadius:4,data:ws.map(d[2])}))};
+  const sw=selWeek(),c=sw?calcWeek(sw):null;
+  const dataC={labels:CARRIERS.map(k=>k.name),datasets:[
+    {label:'Forecast',backgroundColor:'#9aa3b8',borderRadius:4,data:CARRIERS.map(k=>c?c.fc[k.id]:0)},
+    {label:'Confirmed',backgroundColor:'#2457d6',borderRadius:4,data:CARRIERS.map(k=>c?c.conf[k.id]:0)},
+    {label:'Utilized',backgroundColor:'#17a05d',borderRadius:4,data:CARRIERS.map(k=>c?c.util[k.id]:0)}]};
+  const opts={responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}};
+  if(!chW) chW=new Chart($('chWeekly'),{type:'bar',data:dataW,options:opts}); else {chW.data=dataW;chW.update('none');}
+  if(!chC) chC=new Chart($('chCarrier'),{type:'bar',data:dataC,options:opts}); else {chC.data=dataC;chC.update('none');}
+}
+
+function renderWeeklyTable(){
+  const ws=weeksOfYear(),cur=isoWeekOf(todayStr());
+  let h='<thead><tr><th rowspan="2">WEEK</th><th rowspan="2">TEUS +25%</th>'+
+    CARRIERS.map(k=>`<th class="car" colspan="3" style="background:${k.color}">${k.name}</th>`).join('')+'<th rowspan="2"></th></tr><tr>'+
+    CARRIERS.map(()=>'<th>Forecast</th><th>Confirmed</th><th>Utilized</th>').join('')+'</tr></thead><tbody>';
+  if(!ws.length) h+=`<tr><td colspan="${3+CARRIERS.length*3}" class="empty">No weeks yet — add a week above, or <button class="btn primary" data-act="sample">Load my Week 43–45 data</button></td></tr>`;
+  ws.forEach(w=>{
+    const c=calcWeek(w),key=wkKey(w),isCur=cur.year===Number(w.year)&&cur.week===Number(w.week);
+    h+=`<tr class="clickable ${w.week===S.sel.week?'sel':''}"><td data-sel="${w.week}">${w.week}${isCur?' <span class="chip good">now</span>':''}</td>`+
+      inp('w',key,'forecast',w.forecast,'wide')+
+      CARRIERS.map(k=>{
+        const f=k.id==='fml'?inp('w',key,'fml_fcst',w.fml_fcst):`<td class="calc">${fmt(c.fc[k.id])}</td>`;
+        const u=c.fromDaily[k.id]?`<td class="calc" title="Calculated from the date-wise table">${fmt(c.util[k.id])}</td>`:inp('w',key,k.id+'_util',w[k.id+'_util']);
+        return f+inp('w',key,k.id+'_conf',w[k.id+'_conf'])+u;
+      }).join('')+
+      `<td><button class="xbtn ${S.armedDel===key?'armed':''}" data-del="${key}" title="Delete week">${S.armedDel===key?'Sure?':'✕'}</button></td></tr>`;
+  });
+  $('tblWeekly').innerHTML=h+'</tbody>';
+}
+
+function renderSummary(){
+  const ws=weeksOfYear(),cur=isoWeekOf(todayStr());
+  let h='<thead><tr><th>WEEK</th><th>FORECAST</th><th>TOTAL CONFIRMED</th><th>TOTAL UTILIZED</th><th>UTIL %</th><th>TO BE ARRIVED</th><th>TO BE UTILIZED</th><th>DEFICIT / SURPLUS</th><th>CBM +25%</th><th>TEUS</th>'+
+    CARRIERS.map(k=>`<th class="car" style="background:${k.color}">${k.name}</th>`).join('')+'</tr></thead><tbody>';
+  if(!ws.length) h+=`<tr><td colspan="${10+CARRIERS.length}" class="empty">Nothing to summarise yet.</td></tr>`;
+  const tot={f:0,c:0,u:0,a:0,l:0,d:0};
+  ws.forEach(w=>{
+    const c=calcWeek(w),d=Math.round(c.deficit);
+    tot.f+=num(w.forecast);tot.c+=c.totalConf;tot.u+=c.totalUtil;tot.a+=c.toBeArrived;tot.l+=c.leftTotal;tot.d+=c.deficit;
+    h+=`<tr class="clickable ${w.week===S.sel.week?'sel':''}"><td data-sel="${w.week}">${w.week}${cur.year===Number(w.year)&&cur.week===Number(w.week)?' <span class="chip good">now</span>':''}</td>
+      <td>${fmt(num(w.forecast))}</td><td>${fmt(c.totalConf)}</td><td>${fmt(c.totalUtil)}</td><td>${pctTxt(c.utilPct)}</td>
+      <td>${fmt(c.toBeArrived)}</td><td>${fmt(c.leftTotal)}</td>
+      <td class="${d<0?'neg':(d>0?'pos':'')}">${signed(c.deficit)} <span class="muted" style="font-weight:400;font-size:11px">${d<0?'deficit':(d>0?'surplus':'')}</span></td>
+      <td>${fmt(c.cbmPlan)}</td><td>${fmt(num(w.forecast))}</td>`+
+      CARRIERS.map(k=>`<td>${fmt(c.fc[k.id])}</td>`).join('')+'</tr>';
+  });
+  if(ws.length>1){
+    const d=Math.round(tot.d);
+    h+=`</tbody><tfoot><tr><td class="lab">YEAR TOTAL</td><td>${fmt(tot.f)}</td><td>${fmt(tot.c)}</td><td>${fmt(tot.u)}</td><td>${tot.c>0?pctTxt(tot.u/tot.c):'—'}</td><td>${fmt(tot.a)}</td><td>${fmt(tot.l)}</td><td class="${d<0?'neg':(d>0?'pos':'')}">${signed(tot.d)}</td><td colspan="${2+CARRIERS.length}"></td></tr></tfoot>`;
+  } else h+='</tbody>';
+  $('tblSummary').innerHTML=h;
+}
+
+function renderDaily(){
+  const w=selWeek();
+  if(!w){$('dailyTitle').textContent='3 · Date-wise utilization';$('tblDaily').innerHTML='<tbody><tr><td class="empty">Select or add a week first.</td></tr></tbody>';return;}
+  const c=calcWeek(w),cpt=num(S.cfg.cbmPerTeu)||33,today=todayStr();
+  $('dailyTitle').innerHTML=`3 · Week ${w.week} date-wise utilization <small>TEUs used per carrier per day, plus forecast vs actual CBM</small>`;
+  let h='<thead><tr><th>DATE</th>'+CARRIERS.map(k=>`<th class="car" style="background:${k.color}">${k.name}</th>`).join('')+
+    '<th>DAY TOTAL</th><th>FORECAST CBM</th><th>FORECAST TEUS</th><th>ACTUAL CBM</th><th>ACTUAL TEUS</th><th>ACT vs FCST</th></tr></thead><tbody>';
+  c.dates.forEach(d=>{
+    const r=S.daily[d]||{};
+    const dayTot=CARRIERS.reduce((a,k)=>a+num(r[k.id]),0);
+    const hasAct=r.actCbm!==''&&r.actCbm!=null&&r.actCbm!==undefined;
+    const v=num(r.fcstCbm)>0&&hasAct?num(r.actCbm)/num(r.fcstCbm)-1:null;
+    h+=`<tr class="${d===today?'today':''}"><td style="text-align:left"><b>${fmtDate(d)}</b> <span class="muted">${dowName(d)}</span>${d===today?' <span class="chip good">today</span>':''}</td>`+
+      CARRIERS.map(k=>inp('d',d,k.id,r[k.id])).join('')+
+      `<td class="calc">${dayTot?fmt(dayTot):''}</td>`+
+      inp('d',d,'fcstCbm',r.fcstCbm,'wide')+`<td class="calc">${num(r.fcstCbm)?fmt(num(r.fcstCbm)/cpt):''}</td>`+
+      inp('d',d,'actCbm',r.actCbm,'wide')+`<td class="calc">${hasAct&&num(r.actCbm)?fmt(num(r.actCbm)/cpt):''}</td>`+
+      `<td class="${v==null?'':(v<0?'neg':'pos')}">${v==null?'':(v>0?'+':'−')+Math.abs(Math.round(v*100))+'%'}</td></tr>`;
+  });
+  const cells=f=>CARRIERS.map(k=>`<td>${f(k)}</td>`).join('');
+  const tail=n=>`<td colspan="${n}"></td>`;
+  h+=`</tbody><tfoot>
+    <tr><td class="lab">TOTAL UTILIZED</td>${cells(k=>fmt(c.dsum[k.id]))}<td>${fmt(CARRIERS.reduce((a,k)=>a+c.dsum[k.id],0))}</td>
+      <td>${fmt(c.fcstCbm)}</td><td>${fmt(c.fcstCbm/cpt)}</td><td>${fmt(c.actCbm)}</td><td>${fmt(c.actTeu)}</td><td>${c.fcstCbm>0&&c.actCbm>0?pctTxt(c.actCbm/c.fcstCbm):''}</td></tr>
+    <tr><td class="lab">CONFIRMED</td>${cells(k=>fmt(c.conf[k.id]))}<td>${fmt(c.totalConf)}</td>${tail(6)}</tr>
+    <tr><td class="lab">UTILIZED</td>${cells(k=>fmt(c.util[k.id]))}<td>${fmt(c.totalUtil)}</td>${tail(6)}</tr>
+    <tr><td class="lab">LEFT</td>${cells(k=>`<span class="${c.left[k.id]<0?'neg':''}">${fmt(c.left[k.id])}</span>`)}<td>${fmt(c.leftTotal)}</td>${tail(6)}</tr>
+    <tr><td class="lab">% UTILIZED OF CONFIRMED</td>${cells(k=>pctTxt(c.pct[k.id]))}<td>${pctTxt(c.utilPct)}</td>${tail(6)}</tr>
+    <tr><td class="lab">% SHARE OF TOTAL UTILIZED</td>${cells(k=>pctTxt(c.share[k.id]))}<td>${c.totalUtil>0?'100%':'—'}</td>${tail(6)}</tr>
+  </tfoot>`;
+  $('tblDaily').innerHTML=h;
+}
+
+/* ================== export ================== */
+function renderExport(){
+  const ws=weeksOfYear();
+  if(!ws.length){$('exportBox').innerHTML='<span class="muted">No weeks to export yet.</span>';return;}
+  const nums=ws.map(w=>w.week);
+  if(!nums.includes(S.exp.from)) S.exp.from=nums[0];
+  if(!nums.includes(S.exp.to)) S.exp.to=nums[nums.length-1];
+  if(S.exp.from>S.exp.to) S.exp.to=S.exp.from;
+  const opts=v=>nums.map(n=>`<option value="${n}" ${n===v?'selected':''}>Week ${n}</option>`).join('');
+  const count=nums.filter(n=>n>=S.exp.from&&n<=S.exp.to).length;
+  $('exportBox').innerHTML=`<span class="muted">From</span><select id="expFrom">${opts(S.exp.from)}</select>
+    <span class="muted">to</span><select id="expTo">${opts(S.exp.to)}</select>
+    <span class="muted">(${S.sel.year} · ${count} week${count===1?'':'s'})</span>
+    <button class="btn primary" data-act="csv">⬇ Download CSV</button>
+    <button class="btn" data-act="copy">Copy for Excel / Sheets</button>`;
+}
+function csvCell(v){const s=v==null?'':String(v);return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+const r1 = n => Math.round(n*10)/10;
+function exportData(){
+  const ws=weeksOfYear().filter(w=>w.week>=S.exp.from&&w.week<=S.exp.to);
+  const cpt=num(S.cfg.cbmPerTeu)||33;
+  const wh=['Year','Week','Start','End','Forecast TEUs (+25%)','CBM (+25%)'];
+  CARRIERS.forEach(k=>wh.push(k.name+' Forecast',k.name+' Confirmed',k.name+' Utilized',k.name+' Left',k.name+' Util %'));
+  wh.push('Total Confirmed','Total Utilized','Util % of Confirmed','Forecast CBM (daily)','Actual CBM','Forecast TEUs (daily)','Actual TEUs','To Be Arrived','To Be Utilized','Deficit/Surplus');
+  const wr=[];
+  const dh=['Week','Date','Day'].concat(CARRIERS.map(k=>k.name+' TEUs'),['Day Total TEUs','Forecast CBM','Forecast TEUs','Actual CBM','Actual TEUs','Actual vs Forecast %']);
+  const dr=[];
+  ws.forEach(w=>{
+    const c=calcWeek(w);
+    const r=[w.year,w.week,c.dates[0],c.dates[6],num(w.forecast),Math.round(c.cbmPlan)];
+    CARRIERS.forEach(k=>r.push(c.fc[k.id],c.conf[k.id],c.util[k.id],c.left[k.id],c.pct[k.id]==null?'':Math.round(c.pct[k.id]*100)+'%'));
+    r.push(c.totalConf,c.totalUtil,c.utilPct==null?'':Math.round(c.utilPct*100)+'%',c.fcstCbm,c.actCbm,r1(c.fcstCbm/cpt),r1(c.actTeu),Math.round(c.toBeArrived),c.leftTotal,Math.round(c.deficit));
+    wr.push(r);
+    c.dates.forEach(d=>{
+      const x=S.daily[d]||{};
+      const tot=CARRIERS.reduce((a,k)=>a+num(x[k.id]),0);
+      const hasAct=x.actCbm!==''&&x.actCbm!=null&&x.actCbm!==undefined;
+      const v=num(x.fcstCbm)>0&&hasAct?Math.round((num(x.actCbm)/num(x.fcstCbm)-1)*100)+'%':'';
+      dr.push([w.week,d,dowName(d)].concat(CARRIERS.map(k=>x[k.id]==null?'':x[k.id]),[tot||'',x.fcstCbm==null?'':x.fcstCbm,num(x.fcstCbm)?r1(num(x.fcstCbm)/cpt):'',hasAct?x.actCbm:'',hasAct&&num(x.actCbm)?r1(num(x.actCbm)/cpt):'',v]));
+    });
+  });
+  return {ws,wh,wr,dh,dr,rows:[['WEEKLY SUMMARY'],wh].concat(wr,[[],['DATE-WISE DETAIL'],dh],dr)};
+}
+function downloadCSV(){
+  const d=exportData();
+  if(!d.ws.length){toast('No weeks in that range');return;}
+  const text='﻿'+d.rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));
+  a.download=`carrier-utilization_${S.sel.year}_W${S.exp.from}-W${S.exp.to}.csv`;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);
+  toast(`Downloading ${d.ws.length} week(s)…`);
+}
+function copyData(){
+  const d=exportData();
+  if(!d.ws.length){toast('No weeks in that range');return;}
+  const text=d.rows.map(r=>r.join('\t')).join('\n');
+  const fallback=()=>{const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();let ok=false;try{ok=document.execCommand('copy');}catch(e){}t.remove();toast(ok?'Copied — paste into Excel or Google Sheets':'Copy blocked by the browser — use Download CSV');};
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(()=>toast('Copied — paste into Excel or Google Sheets'),fallback); else fallback();
+}
+document.addEventListener('change',e=>{
+  if(e.target.id==='expFrom'){S.exp.from=Number(e.target.value);if(S.exp.to<S.exp.from)S.exp.to=S.exp.from;renderExport();}
+  if(e.target.id==='expTo'){S.exp.to=Number(e.target.value);if(S.exp.from>S.exp.to)S.exp.from=S.exp.to;renderExport();}
+});
+
+/* ================== events ================== */
+document.addEventListener('input',e=>{
+  const t=e.target;if(!t.dataset||!t.dataset.k) return;
+  const clean=t.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1');
+  if(clean!==t.value){const p=t.selectionStart-1;t.value=clean;try{t.setSelectionRange(p,p);}catch(x){}}
+  const {k,id,f}=t.dataset;
+  if(k==='w'){
+    const w=S.weekly.find(x=>wkKey(x)===id);if(!w) return;
+    w[f]=clean;markW(w);
+  }else{
+    const r=S.daily[id]||(S.daily[id]={date:id,maersk:'',hapag:'',hellman:'',one:'',fml:'',fcstCbm:'',actCbm:''});
+    r[f]=clean;markD(id);
+  }
+  renderAll();
+});
+document.addEventListener('click',async e=>{
+  if(e.target.closest('[data-act="sample"]')){loadSample();return;}
+  if(e.target.closest('[data-act="csv"]')){downloadCSV();return;}
+  if(e.target.closest('[data-act="copy"]')){copyData();return;}
+  const sel=e.target.closest('[data-sel]');
+  if(sel){S.sel.week=Number(sel.dataset.sel);S.armedDel=null;renderAll();return;}
+  const del=e.target.closest('[data-del]');
+  if(del){
+    const key=del.dataset.del;
+    if(S.armedDel!==key){S.armedDel=key;renderAll();clearTimeout(window._armT);window._armT=setTimeout(()=>{S.armedDel=null;renderWeeklyTable();},3000);return;}
+    S.armedDel=null;
+    const [y,wk]=key.split('-').map(Number);
+    S.weekly=S.weekly.filter(w=>wkKey(w)!==key);S.dirtyW.delete(key);
+    const ws=weeksOfYear();if(S.sel.week===wk) S.sel.week=ws.length?ws[ws.length-1].week:0;
+    renderAll();
+    try{await api('api_deleteWeek',y,wk);toast('Week '+wk+' deleted (date-wise rows are kept)');}catch(err){toast('Delete failed: '+err.message);}
+  }
+});
+$('yearSel').onchange=e=>{S.sel.year=Number(e.target.value);const ws=weeksOfYear();S.sel.week=ws.length?ws[ws.length-1].week:0;renderAll();};
+$('weekSel').onchange=e=>{S.sel.week=Number(e.target.value);renderAll();};
+$('btnCurrent').onclick=()=>{
+  const c=isoWeekOf(todayStr());S.sel.year=c.year;
+  if(weeksOfYear().some(w=>w.week===c.week)) S.sel.week=c.week; else toast(`Week ${c.week} isn't set up yet — add it below`);
+  renderAll();
+};
+$('btnAddWeek').onclick=()=>{
+  const n=Number($('addWeekNo').value);
+  if(!n||n<1||n>53){toast('Enter a week number between 1 and 53');return;}
+  let w=S.weekly.find(x=>Number(x.year)===S.sel.year&&Number(x.week)===n);
+  if(!w){w=newWeek(S.sel.year,n);S.weekly.push(w);markW(w);}
+  S.sel.week=n;$('addWeekNo').value='';renderAll();
+};
+$('addWeekNo').addEventListener('keydown',e=>{if(e.key==='Enter')$('btnAddWeek').click();});
+$('btnRefresh').onclick=()=>init(true);
+
+/* ================== settings modal ================== */
+function openSettings(){
+  const c=S.cfg;
+  $('dlg').innerHTML=`<h3>Settings</h3><div class="muted" style="margin-bottom:6px">Allocation % applies to every week's forecast (calculated live).</div>
+    ${ALLOC.map(k=>`<div class="frow"><label>${k.name} allocation %</label><input data-cfg="pct_${k.id}" value="${c['pct_'+k.id]}"></div>`).join('')}
+    <div class="muted" id="pctSum" style="text-align:right"></div>
+    <div class="frow"><label>FML default weekly forecast (TEUs)</label><input data-cfg="fmlDefault" value="${c.fmlDefault}"></div>
+    <div class="frow"><label>CBM per TEU</label><input data-cfg="cbmPerTeu" value="${c.cbmPerTeu}"></div>
+    <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+    <div class="muted">Want to see how it looks? Loads your Week 43–45 example (Oct 2026).</div>
+    <div class="acts" style="justify-content:flex-start"><button class="btn" id="btnSample">Load sample data</button></div>
+    <div class="acts"><button class="btn" id="cfgCancel">Cancel</button><button class="btn primary" id="cfgSave">Save</button></div>`;
+  $('modal').classList.add('open');
+  const upd=()=>{const s=ALLOC.reduce((a,k)=>a+num(document.querySelector(`[data-cfg="pct_${k.id}"]`).value),0);const el=$('pctSum');el.textContent='Total: '+s+'%';el.style.color=s===100?'var(--good)':'var(--bad)';};
+  $('dlg').querySelectorAll('[data-cfg]').forEach(i=>i.addEventListener('input',upd));upd();
+  $('cfgCancel').onclick=closeModal;
+  $('cfgSave').onclick=async()=>{
+    const cfg={...S.cfg};$('dlg').querySelectorAll('[data-cfg]').forEach(i=>cfg[i.dataset.cfg]=num(i.value));
+    if(!(cfg.cbmPerTeu>0)){toast('CBM per TEU must be above 0');return;}
+    S.cfg=cfg;closeModal();renderAll();
+    try{await api('api_saveConfig',cfg);toast('Settings saved');}catch(e){toast('Could not save settings: '+e.message);}
+  };
+  $('btnSample').onclick=()=>{loadSample();closeModal();};
+}
+function closeModal(){$('modal').classList.remove('open');}
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+$('btnSettings').onclick=openSettings;
+
+/* ================== export / download ================== */
+const csvEsc=v=>{const s=v==null?'':String(v);return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+const toCsv=rows=>'﻿'+rows.map(r=>r.map(csvEsc).join(',')).join('\r\n');
+
+function weeklyRows(){
+  const head=['Year','Week','From','To','Forecast TEUs (+25%)','CBM +25%'];
+  CARRIERS.forEach(k=>head.push(k.name+' Forecast',k.name+' Confirmed',k.name+' Utilized'));
+  head.push('Total Confirmed','Total Utilized','Utilization %','To Be Arrived','To Be Utilized','Deficit/Surplus','Actual CBM','Forecast CBM (daily)');
+  const rows=[head];
+  [...S.weekly].sort((a,b)=>a.year-b.year||a.week-b.week).forEach(w=>{
+    const c=calcWeek(w);
+    const row=[w.year,w.week,c.dates[0],c.dates[6],num(w.forecast),c.cbmPlan];
+    CARRIERS.forEach(k=>row.push(c.fc[k.id],c.conf[k.id],c.util[k.id]));
+    row.push(c.totalConf,c.totalUtil,c.utilPct==null?'':Math.round(c.utilPct*100)+'%',r1(c.toBeArrived),r1(c.leftTotal),r1(c.deficit),c.actCbm,c.fcstCbm);
+    rows.push(row);
+  });
+  return rows;
+}
+function dailyRows(){
+  const cpt=num(S.cfg.cbmPerTeu)||33;
+  const head=['Date','Day','ISO Year','Week'].concat(CARRIERS.map(k=>k.name+' TEUs'),['Day Total TEUs','Forecast CBM','Forecast TEUs','Actual CBM','Actual TEUs']);
+  const rows=[head];
+  Object.keys(S.daily).sort().forEach(d=>{
+    const r=S.daily[d],iw=isoWeekOf(d);
+    const has=v=>v!==''&&v!=null;
+    rows.push([d,dowName(d),iw.year,iw.week].concat(CARRIERS.map(k=>has(r[k.id])?num(r[k.id]):''),
+      [CARRIERS.reduce((a,k)=>a+num(r[k.id]),0),has(r.fcstCbm)?num(r.fcstCbm):'',has(r.fcstCbm)?r1(num(r.fcstCbm)/cpt):'',has(r.actCbm)?num(r.actCbm):'',has(r.actCbm)?r1(num(r.actCbm)/cpt):'']));
+  });
+  return rows;
+}
+function downloadFile(name,text){
+  try{
+    const blob=new Blob([text],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+  }catch(e){toast('Download blocked by browser — use the Copy button instead');}
+}
+async function copyText(text){
+  try{await navigator.clipboard.writeText(text);}
+  catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(x){}t.remove();}
+  toast('Copied — paste into Excel or Google Sheets');
+}
+function openExport(){
+  const stamp=todayStr();
+  const sets=[
+    {id:'weekly',title:'Weekly report',desc:`All ${S.weekly.length} week(s): forecast, confirmed, utilized per carrier, totals, deficit/surplus`,file:`carrier-weekly-${stamp}.csv`,rows:weeklyRows},
+    {id:'daily',title:'Daily data',desc:`All ${Object.keys(S.daily).length} day(s): TEUs per carrier, forecast vs actual CBM`,file:`carrier-daily-${stamp}.csv`,rows:dailyRows}
+  ];
+  $('dlg').innerHTML=`<h3>Export data</h3><div class="muted" style="margin-bottom:8px">CSV files open directly in Excel or Google Sheets. Includes every year, not just the selected one.</div>`+
+    sets.map(s=>`<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0"><b>${s.title}</b><div class="muted" style="font-size:12.5px">${s.desc}</div>
+      <div class="acts" style="margin-top:8px;justify-content:flex-start"><button class="btn primary" data-exp="${s.id}">⬇ Download CSV</button><button class="btn" data-cp="${s.id}">Copy</button></div></div>`).join('')+
+    `<div class="acts"><button class="btn" id="expAll">⬇ Download both</button><button class="btn" id="expClose">Close</button></div>`;
+  $('modal').classList.add('open');
+  const by=id=>sets.find(s=>s.id===id);
+  $('dlg').querySelectorAll('[data-exp]').forEach(b=>b.onclick=()=>{const s=by(b.dataset.exp);downloadFile(s.file,toCsv(s.rows()));});
+  $('dlg').querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{const s=by(b.dataset.cp);copyText(s.rows().map(r=>r.join('\t')).join('\n'));});
+  $('expAll').onclick=()=>{sets.forEach((s,i)=>setTimeout(()=>downloadFile(s.file,toCsv(s.rows())),i*400));};
+  $('expClose').onclick=closeModal;
+}
+$('btnExport').onclick=openExport;
+
+function loadSample(){
+  const mk=(w,o)=>{const r=newWeek(2026,w);Object.assign(r,o);return r;};
+  const rows=[
+    mk(43,{forecast:100,fml_fcst:10,maersk_conf:30,hapag_conf:20,hellman_conf:12,one_conf:25,fml_conf:15}),
+    mk(44,{forecast:79,fml_fcst:10,maersk_conf:25,hapag_conf:20,hellman_conf:10}),
+    mk(45,{forecast:54,fml_fcst:10})
+  ];
+  rows.forEach(r=>{const i=S.weekly.findIndex(x=>wkKey(x)===wkKey(r));if(i<0)S.weekly.push(r);else S.weekly[i]=r;markW(r);});
+  const D=(date,m,h,hm,o,f,fc,ac)=>{S.daily[date]={date,maersk:m,hapag:h,hellman:hm,one:o,fml:f,fcstCbm:fc,actCbm:ac};markD(date);};
+  D('2026-10-19',10,'','','','',240,415);
+  D('2026-10-20',10,'',12,'','',710,374);
+  D('2026-10-21','','','','',10,241,694);
+  D('2026-10-22','','','',12,'',591,408);
+  D('2026-10-23','',18,'','','',1318,344);
+  D('2026-10-24',6,2,'',8,'',40,'');
+  D('2026-10-25','','','','','',435,'');
+  S.sel={year:2026,week:43};renderAll();toast('Sample data loaded');
+}
+
+/* ================== init ================== */
+async function init(manual){
+  setState('loading');
+  try{
+    const d=await api('api_getAll');
+    S.cfg={...DEFAULT_CFG,...(d.config||{})};
+    S.weekly=(d.weekly||[]).map(r=>{const o={};WEEKLY_KEYS.forEach(k=>o[k]=r[k]===undefined?'':r[k]);o.year=Number(o.year);o.week=Number(o.week);return o;});
+    S.daily={};(d.daily||[]).forEach(r=>{S.daily[r.date]={date:r.date,maersk:r.maersk,hapag:r.hapag,hellman:r.hellman,one:r.one,fml:r.fml,fcstCbm:r.fcstCbm,actCbm:r.actCbm};});
+    S.dirtyW.clear();S.dirtyD.clear();
+    const cur=isoWeekOf(todayStr());
+    if(!manual||!S.sel.year){
+      S.sel.year=cur.year;
+      const ws=weeksOfYear();
+      S.sel.week=ws.some(w=>w.week===cur.week)?cur.week:(ws.length?ws[ws.length-1].week:0);
+    }
+    S.loaded=true;setState('saved');renderAll();
+    if(manual) toast('Reloaded from sheet');
+  }catch(e){setState('error',e.message);toast('Could not load data: '+e.message);}
+}
+init(false);
+</script>
+</body>
+</html>
