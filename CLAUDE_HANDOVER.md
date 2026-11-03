@@ -16,6 +16,8 @@ Animation ported and working (checked with headless Chrome screenshots). The res
 
 - 2026-11-03: Fleet DONE (Sonnet). Tidewell (green, left to right, lane 0.25H, on screen at load) and Kestrel (grey, mirrored, right to left, lane 0.36H). The user skipped the Opus review for this animation. Known: on phone width, Kestrel starts partly cut off at the right edge (not investigated).
 
+- 2026-11-03: Created private GitHub repo https://github.com/TaeebaTasnia/c-a-automation-gap-4 (branch `main`) and pushed everything. `.claude-flow/` is gitignored.
+
 ## In progress
 - (done) Adding a fleet of 2 extra ships with fictional company liveries, so a ship is visible right away. Opus planned it (spec below); a Sonnet subagent is implementing it.
   Spec: in `js/shore-ship.js`, refactor the sprite builder to take a livery; add `this.fleet` of cruising ships (own lane, speed, start phase, direction, wake); one ship starts on screen at load; one sails right to left; draw ships in order of y; leave the original ship and its pieces logic unchanged.
