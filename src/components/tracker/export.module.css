@@ -1,0 +1,12 @@
+.panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+.count { font-size: 14px; color: var(--text-muted); }
+.none { margin: 0; padding: 14px 16px; color: var(--text-muted); border: 2px dashed var(--border); background: var(--surface); }

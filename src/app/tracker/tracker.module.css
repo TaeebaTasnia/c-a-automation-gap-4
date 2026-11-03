@@ -1,0 +1,28 @@
+.page { min-height: 100vh; background: var(--bg); color: var(--text); }
+.main {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 20px 16px 32px;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .charts { grid-template-columns: minmax(0, 1fr); }
+}
+.sectionTitle { margin-bottom: 8px; font-size: 22px; }
+.sectionHint { margin: 2px 0 10px; font-size: 14px; color: var(--text-muted); }
+.footer {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 16px 16px 40px;
+  font-size: 14px;
+  color: var(--text-muted);
+  border-top: 2px dashed color-mix(in srgb, var(--border) 50%, transparent);
+}
+.footer a { color: var(--accent); }

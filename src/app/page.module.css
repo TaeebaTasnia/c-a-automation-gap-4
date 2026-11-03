@@ -1,0 +1,40 @@
+/* Only the button is interactive; everything else falls through to the canvas drag. */
+.open {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 10;
+  padding: 12px 20px;
+  font-family: var(--font-pixel), ui-monospace, Menlo, Consolas, monospace;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #f2f0ea;
+  background: #24394a;
+  border: 2px solid #24394a;
+  box-shadow: 4px 4px 0 #c26f3a;
+  pointer-events: auto;
+}
+
+.open:hover {
+  background: #34506a;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #c26f3a;
+}
+
+.open:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 #c26f3a;
+}
+
+.open:focus-visible {
+  outline: 2px solid #f2f0ea;
+  outline-offset: 2px;
+  box-shadow: 4px 4px 0 #c26f3a, 0 0 0 4px #24394a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .open:hover,
+  .open:active { transform: none; }
+}

@@ -21,3 +21,11 @@
 - Fix: clamp y with the highest shore point sampled at x-40, x, x+40 (margin 21).
 - How to avoid: when a wide sprite follows a sloped boundary, sample the boundary across the sprite's full extent, not just its anchor.
 - Repeat count: 1
+
+## Chose plain HTML/JS for a full app frontend without confirming the stack
+- Date: 2026-11-03
+- What went wrong: spec and first UI agent targeted plain HTML/vanilla JS; user wanted Next.js. Agent B work (tracker.html) was discarded.
+- Root cause: copied the existing landing page stack (plain HTML) and assumed it for the dashboard.
+- Fix: re-platformed to Next.js App Router + TypeScript; logic/store ported to src/lib.
+- How to avoid: before specifying a multi-file app, state the proposed stack (framework, language, test runner) in the plan and use modern framework defaults for new frontends; do not inherit the stack of a one-off prototype page.
+- Repeat count: 1
