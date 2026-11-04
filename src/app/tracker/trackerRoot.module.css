@@ -1,0 +1,178 @@
+/* Readable type for the whole tracker subtree (dialogs and toasts render inside it, no portals). */
+.trackerRoot {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  --font-body: var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.trackerRoot h1,
+.trackerRoot h2,
+.trackerRoot h3,
+.trackerRoot h4 {
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+.trackerRoot button,
+.trackerRoot input,
+.trackerRoot select,
+.trackerRoot textarea {
+  font-family: inherit;
+}
+
+/* Theme tokens, scoped to the tracker so the landing page keeps the globals.
+   data-theme is set on this element before first paint (inline script in layout.tsx) and then by the
+   toggle. The prefers-color-scheme block is only a fallback for when no data-theme is present. */
+.trackerRoot,
+.trackerRoot[data-theme='light'] {
+  color-scheme: light;
+  --sand: #f2f0ea;
+  --wet-sand: #e3e6df;
+  --speck: #d8d2c4;
+  --sea-0: #e8eee9;
+  --sea-1: #c3d6d3;
+  --sea-2: #93b6b5;
+  --sea-3: #64908f;
+  --sea-4: #41707a;
+  --sea-5: #2c555e;
+  --hull: #24394a;
+  --hull-2: #34506a;
+  --funnel: #c26f3a;
+  --rust: #9b4a3a;
+  --good: #3f8a5a;
+  --bad: #b4483a;
+  --warn: #d9a441;
+  --c-maersk: #3f7fa6;
+  --c-hapag: #c9793f;
+  --c-hellman: #4f8a6a;
+  --c-one: #a8456f;
+  --c-fml: #7d8590;
+  --bg: var(--sand);
+  --surface: #fbfaf6;
+  --surface-2: var(--wet-sand);
+  --border: var(--hull);
+  --text: #1c2a35;
+  --text-muted: #4a5b66;
+  --accent: var(--sea-5);
+  --shadow: var(--hull);
+  --v-forecast: #b8b19e;
+  --v-hatch: #8d8672;
+  --v-grid: #c9ccc2;
+  --v-sel: #e3e6df;
+  --v-ink: #24394a;
+  /* solid (inverted) surfaces: primary buttons, selected chips and tabs, toast, carrier trigger */
+  --solid: var(--hull);
+  --solid-hover: var(--hull-2);
+  --on-solid: #f2f0ea;
+  --on-solid-bad: #ffb3a3;
+  --on-bad: #ffffff;
+  --on-c: #ffffff;
+  --dot-deficit-on: #f0846f;
+  --dot-surplus-on: #7fd49b;
+  --dot-balanced-on: #d8d2c4;
+}
+.trackerRoot[data-theme='dark'] {
+  color-scheme: dark;
+  --sand: #10202a;
+  --wet-sand: #17303c;
+  --speck: #22414f;
+  --sea-0: #1c3a46;
+  --sea-1: #2a5360;
+  --sea-2: #3f7480;
+  --sea-3: #5b97a0;
+  --sea-4: #86b9bb;
+  --sea-5: #b5d6d3;
+  --hull: #8fb0c8;
+  --hull-2: #6d93b0;
+  --funnel: #e08a4f;
+  --rust: #d0705c;
+  --good: #5fb87f;
+  --bad: #e0705f;
+  --warn: #e6b85a;
+  --c-maersk: #5fa3cc;
+  --c-hapag: #e09660;
+  --c-hellman: #6fb08c;
+  --c-one: #cc6a93;
+  --c-fml: #9aa3ad;
+  --bg: #0c1820;
+  --surface: #13262f;
+  --surface-2: #17303c;
+  --border: #5b97a0;
+  --text: #e6eeea;
+  --text-muted: #9fb4b8;
+  --accent: var(--sea-4);
+  --shadow: #050d12;
+  --v-forecast: #6a8794;
+  --v-hatch: #3d5a67;
+  --v-grid: #2a4553;
+  --v-sel: #1d3946;
+  --v-ink: #8fb0c8;
+  --solid: var(--sea-4);
+  --solid-hover: var(--sea-3);
+  --on-solid: #0c1820;
+  --on-solid-bad: #8a1f12;
+  --on-bad: #0c1820;
+  --on-c: #0c1820;
+  --dot-deficit-on: #a8382a;
+  --dot-surplus-on: #1f6a3c;
+  --dot-balanced-on: #3a4a52;
+}
+@media (prefers-color-scheme: dark) {
+  .trackerRoot:not([data-theme]) {
+    color-scheme: dark;
+    --sand: #10202a;
+    --wet-sand: #17303c;
+    --speck: #22414f;
+    --sea-0: #1c3a46;
+    --sea-1: #2a5360;
+    --sea-2: #3f7480;
+    --sea-3: #5b97a0;
+    --sea-4: #86b9bb;
+    --sea-5: #b5d6d3;
+    --hull: #8fb0c8;
+    --hull-2: #6d93b0;
+    --funnel: #e08a4f;
+    --rust: #d0705c;
+    --good: #5fb87f;
+    --bad: #e0705f;
+    --warn: #e6b85a;
+    --c-maersk: #5fa3cc;
+    --c-hapag: #e09660;
+    --c-hellman: #6fb08c;
+    --c-one: #cc6a93;
+    --c-fml: #9aa3ad;
+    --bg: #0c1820;
+    --surface: #13262f;
+    --surface-2: #17303c;
+    --border: #5b97a0;
+    --text: #e6eeea;
+    --text-muted: #9fb4b8;
+    --accent: var(--sea-4);
+    --shadow: #050d12;
+    --v-forecast: #6a8794;
+    --v-hatch: #3d5a67;
+    --v-grid: #2a4553;
+    --v-sel: #1d3946;
+    --v-ink: #8fb0c8;
+    --solid: var(--sea-4);
+    --solid-hover: var(--sea-3);
+    --on-solid: #0c1820;
+    --on-solid-bad: #8a1f12;
+    --on-bad: #0c1820;
+    --on-c: #0c1820;
+    --dot-deficit-on: #a8382a;
+    --dot-surplus-on: #1f6a3c;
+    --dot-balanced-on: #3a4a52;
+  }
+}
+
+/* Match page chrome (overscroll area, scrollbars) to the chosen tracker theme. */
+:global(html:has([data-tracker-root][data-theme='light'])) { color-scheme: light; }
+:global(html:has([data-tracker-root][data-theme='dark'])) { color-scheme: dark; }
+:global(body:has([data-tracker-root][data-theme='light'])) { background: #f2f0ea; }
+:global(body:has([data-tracker-root][data-theme='dark'])) { background: #0c1820; }

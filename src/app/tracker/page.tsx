@@ -13,7 +13,7 @@ import Skeleton from '@/components/tracker/Skeleton';
 import Toast from '@/components/tracker/Toast';
 import EmptyState from '@/components/tracker/EmptyState';
 import KpiRow from '@/components/tracker/visuals/KpiRow';
-import CarrierCards from '@/components/tracker/visuals/CarrierCards';
+import CarrierStatus from '@/components/tracker/visuals/CarrierStatus';
 import WeeklyChart from '@/components/tracker/visuals/WeeklyChart';
 import CarrierChart from '@/components/tracker/visuals/CarrierChart';
 import ShareBar from '@/components/tracker/visuals/ShareBar';
@@ -36,7 +36,7 @@ export default function TrackerPage() {
             {tr.selWeek && tr.calc ? (
               <>
                 <KpiRow week={tr.selWeek} calc={tr.calc} cfg={tr.cfg} daily={tr.daily} today={tr.today} />
-                <CarrierCards week={tr.selWeek} calc={tr.calc} cfg={tr.cfg} />
+                <CarrierStatus week={tr.selWeek} calc={tr.calc} cfg={tr.cfg} daily={tr.daily} today={tr.today} />
               </>
             ) : (
               <EmptyState

@@ -33,13 +33,13 @@
   font-family: var(--font-display);
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--text);
   background: var(--surface-2);
   border-bottom: 2px solid var(--border);
 }
-.table thead tr:nth-child(2) th { border-top: 0; font-size: 12px; color: var(--text-muted); }
+.table thead tr:nth-child(2) th { border-top: 0; font-size: 13px; color: var(--text-muted); }
 .table th.car {
   text-align: center;
   background: color-mix(in srgb, var(--cc) 16%, var(--surface));
@@ -81,10 +81,10 @@
 .todayChip {
   display: inline-block;
   margin-left: 6px;
-  padding: 0 5px;
-  font-family: var(--font-display);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  padding: 0 6px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #1c2a35;
   background: var(--warn);
@@ -94,8 +94,8 @@
   display: inline-block;
   margin-left: 6px;
   padding: 0 5px;
-  font-family: var(--font-display);
-  font-size: 11px;
+  font-weight: 700;
+  font-size: 13px;
   text-transform: uppercase;
   color: #1c2a35;
   background: var(--warn);
@@ -105,7 +105,7 @@
 
 .neg { color: color-mix(in srgb, var(--bad) 80%, var(--text)); font-weight: 700; }
 .pos { color: color-mix(in srgb, var(--good) 70%, var(--text)); font-weight: 700; }
-.word { margin-left: 4px; font-size: 12px; font-weight: 400; color: var(--text-muted); }
+.word { margin-left: 4px; font-size: 13px; font-weight: 400; color: var(--text-muted); }
 
 .del {
   min-width: 52px;
@@ -119,8 +119,8 @@
   cursor: pointer;
 }
 .del:hover { border-color: var(--bad); color: var(--bad); }
-.armed { color: #fff; background: var(--bad); border-color: var(--bad); }
-.armed:hover { color: #fff; }
+.armed { color: var(--on-bad); background: var(--bad); border-color: var(--bad); }
+.armed:hover { color: var(--on-bad); }
 
 /* footer rows */
 .table tfoot td,
@@ -131,7 +131,7 @@
 }
 .table tfoot tr:first-child td,
 .table tfoot tr:first-child th { border-top: 2px solid var(--border); }
-.table tfoot th.first { white-space: normal; min-width: 150px; background: var(--surface-2); font-family: var(--font-display); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+.table tfoot th.first { white-space: normal; min-width: 150px; background: var(--surface-2); font-size: 13px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
 .table tbody tr:last-child td { border-bottom: 0; }
 
 .tableNote { margin: 8px 2px 0; font-size: 13px; color: var(--text-muted); }

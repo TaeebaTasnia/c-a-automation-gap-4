@@ -1,8 +1,8 @@
 /* Browser-only helpers: CSV download via Blob + anchor, clipboard copy with execCommand fallback. */
 
-export function downloadCsv(name: string, text: string): boolean {
+export function downloadBlob(name: string, blob: Blob): boolean {
   try {
-    const url = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = name;
@@ -14,6 +14,10 @@ export function downloadCsv(name: string, text: string): boolean {
   } catch {
     return false;
   }
+}
+
+export function downloadCsv(name: string, text: string): boolean {
+  return downloadBlob(name, new Blob([text], { type: 'text/csv;charset=utf-8' }));
 }
 
 function fallbackCopy(text: string): boolean {

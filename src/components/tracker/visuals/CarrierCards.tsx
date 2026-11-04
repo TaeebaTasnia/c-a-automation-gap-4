@@ -8,7 +8,7 @@ const COLORS: Record<CarrierId, string> = {
 };
 const BLOCKS = 20;
 
-function Card({ k, i, calc, cfg }: { k: Carrier; i: number; calc: WeekCalc; cfg: Config }) {
+export function Card({ k, i, calc, cfg, hl }: { k: Carrier; i: number; calc: WeekCalc; cfg: Config; hl: boolean }) {
   const id = k.id;
   const p = calc.pct[id];
   const over = p != null && p > 1;
@@ -19,7 +19,7 @@ function Card({ k, i, calc, cfg }: { k: Carrier; i: number; calc: WeekCalc; cfg:
   const target = id === 'fml' ? null : num(cfg[('pct_' + id) as keyof Config]);
   const barText = p == null ? 'No confirmed TEUs, utilization not available' : `${Math.round(p * 100)}% of confirmed utilized${over ? ', over 100%' : ''}`;
   return (
-    <article className={s.card} style={{ ['--c' as string]: COLORS[id], ['--i' as string]: i }} aria-label={`${k.name} carrier`}>
+    <article className={s.card} data-carrier={id} data-hl={hl ? "1" : undefined} style={{ ['--c' as string]: COLORS[id], ['--i' as string]: i }} aria-label={`${k.name} carrier`}>
       <div className={s.topbar} />
       <header className={s.head}>
         <h3 className={s.name}>{k.name}</h3>
@@ -65,11 +65,11 @@ function Card({ k, i, calc, cfg }: { k: Carrier; i: number; calc: WeekCalc; cfg:
   );
 }
 
-export default function CarrierCards({ week, calc, cfg }: { week: WeeklyRow; calc: WeekCalc; cfg: Config }) {
+export default function CarrierCards({ week, calc, cfg, highlight = null, staged = false }: { week: WeeklyRow; calc: WeekCalc; cfg: Config; highlight?: CarrierId | null; staged?: boolean }) {
   return (
-    <div className={s.grid}>
+    <div className={s.grid} data-staged={staged ? '1' : undefined}>
       {CARRIERS.map((k, i) => (
-        <Card key={`${week.year}-${week.week}-${k.id}`} k={k} i={i} calc={calc} cfg={cfg} />
+        <Card key={`${week.year}-${week.week}-${k.id}`} k={k} i={i} calc={calc} cfg={cfg} hl={highlight === k.id} />
       ))}
     </div>
   );

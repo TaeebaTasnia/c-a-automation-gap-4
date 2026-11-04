@@ -29,3 +29,11 @@
 - Fix: re-platformed to Next.js App Router + TypeScript; logic/store ported to src/lib.
 - How to avoid: before specifying a multi-file app, state the proposed stack (framework, language, test runner) in the plan and use modern framework defaults for new frontends; do not inherit the stack of a one-off prototype page.
 - Repeat count: 1
+
+## Applied the landing-page pixel style to the whole dashboard; user wanted a professional colourful dashboard
+- Date: 2026-11-03
+- What went wrong: first tracker UI was muted pixel-art with a pixel font, hard shadows, dithering and static charts; user: "not professional, not colorful, no wow factor, no interactive charts, fonts look weird; prev dashboard pdf was better".
+- Root cause: read "make it pixeled like the shore ship" as the style of every component, and never compared against the old dashboard the user already liked.
+- Fix: SPEC_REDESIGN.md: Inter font, vibrant carrier palette, Recharts interactive charts, motion; pixel look kept only on the landing page.
+- How to avoid: for a business dashboard keep brand art on hero/landing only, view the reference the user names (prev PDF/HTML render) BEFORE designing, and show a single-screen visual prototype before building all components.
+- Repeat count: 1

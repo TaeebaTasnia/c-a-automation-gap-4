@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import s from './PixelSea.module.css';
+import { useTheme } from '@/lib/useTheme';
 
 const HEIGHT = 136;
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
@@ -52,6 +53,15 @@ function makeSprite(L: Livery): HTMLCanvasElement {
 export default function PixelSea({ className }: { className?: string }) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { theme } = useTheme();
+  const darkRef = useRef(theme === 'dark');
+  const redrawRef = useRef<(() => void) | null>(null);
+
+  // Theme changes re-ramp the palette in place; the animation loop is not remounted.
+  useEffect(() => {
+    darkRef.current = theme === 'dark';
+    redrawRef.current?.();
+  }, [theme]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -60,7 +70,6 @@ export default function PixelSea({ className }: { className?: string }) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const mqDark = window.matchMedia('(prefers-color-scheme: dark)');
     const mqMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const sprites = LIVERIES.map(makeSprite);
 
@@ -76,8 +85,8 @@ export default function PixelSea({ className }: { className?: string }) {
     let running = false;
 
     const palette = () => {
-      ramp = (mqDark.matches ? RAMP_DARK : RAMP_LIGHT).map(hex32);
-      const p = mqDark.matches ? SAND_DARK : SAND_LIGHT;
+      ramp = (darkRef.current ? RAMP_DARK : RAMP_LIGHT).map(hex32);
+      const p = darkRef.current ? SAND_DARK : SAND_LIGHT;
       sand = { sand: hex32(p.sand), wet: hex32(p.wet), speck: hex32(p.speck), foam: p.foam };
     };
 
@@ -193,13 +202,13 @@ export default function PixelSea({ className }: { className?: string }) {
     ro.observe(wrap);
     document.addEventListener('visibilitychange', onVis);
     mqMotion.addEventListener('change', onMotion);
-    mqDark.addEventListener('change', redraw);
+    redrawRef.current = redraw;
     return () => {
       stop();
       ro.disconnect();
       document.removeEventListener('visibilitychange', onVis);
       mqMotion.removeEventListener('change', onMotion);
-      mqDark.removeEventListener('change', redraw);
+      redrawRef.current = null;
     };
   }, []);
 

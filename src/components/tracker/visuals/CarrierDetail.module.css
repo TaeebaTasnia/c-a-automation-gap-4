@@ -1,0 +1,77 @@
+.detail { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.cardCol { min-width: 0; }
+.right { display: grid; gap: 16px; min-width: 0; }
+.pies { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 760px) {
+  .detail { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .pies { grid-template-columns: minmax(0, 1fr); }
+}
+
+.pieFig, .daily {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 4px 4px 0 var(--shadow);
+  min-width: 0;
+}
+.pieTitle, .dTitle { font-size: 16px; font-weight: 700; }
+.pieBox { position: relative; width: min(100%, 190px); margin: 0 auto; }
+.pie { display: block; width: 100%; height: auto; overflow: visible; }
+.pieEdge { stroke: var(--border); stroke-width: 2; }
+.emptyRing { fill: var(--surface-2); stroke: var(--border); stroke-width: 2; stroke-dasharray: 6 6; }
+.slice { outline: none; cursor: default; transition: opacity 120ms; animation: sweep var(--dur, 200ms) linear var(--delay, 0ms) backwards; }
+.pie:has(.sliceHot) .slice:not(.sliceHot) { opacity: 0.55; }
+.sliceHot { filter: brightness(1.08); }
+@keyframes sweep { from { stroke-dasharray: 0 var(--C); } }
+.badge {
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  padding: 2px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-bad);
+  background: var(--bad);
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+.tip {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 4px 10px;
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 3px 3px 0 var(--shadow);
+  pointer-events: none;
+}
+.pieLegend { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.pieLegend li { display: grid; grid-template-columns: 14px 1fr auto auto; align-items: center; gap: 8px; }
+.pieLegend i { width: 14px; height: 14px; border: 2px solid var(--border); }
+.pieLegend small { min-width: 40px; text-align: right; font-size: 13px; color: var(--text-muted); }
+.emptyMsg { margin: 0; font-size: 14px; color: var(--text-muted); text-align: center; }
+
+.days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.day { display: grid; grid-template-rows: auto 96px auto; gap: 4px; justify-items: center; padding: 4px 2px; border: 2px solid transparent; min-width: 0; }
+.dayNow { border-color: var(--funnel); background: color-mix(in srgb, var(--warn) 16%, var(--surface)); }
+.dVal { font-size: 13px; font-weight: 700; }
+.dTrack { display: flex; align-items: flex-end; width: 100%; max-width: 32px; height: 100%; border-bottom: 2px solid var(--border); }
+.dBar { display: block; width: 100%; border: 2px solid var(--border); border-bottom: 0; transform-origin: bottom; animation: rise 400ms steps(8) backwards; }
+.dLbl { font-size: 13px; color: var(--text-muted); }
+.dayNow .dLbl { color: var(--text); font-weight: 700; }
+@keyframes rise { from { transform: scaleY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .slice, .dBar { animation: none; }
+}

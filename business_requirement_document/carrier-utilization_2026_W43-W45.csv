@@ -1,0 +1,29 @@
+﻿WEEKLY SUMMARY
+Year,Week,Start,End,Forecast TEUs (+25%),CBM (+25%),MAERSK Forecast,MAERSK Confirmed,MAERSK Utilized,MAERSK Left,MAERSK Util %,HAPAG Forecast,HAPAG Confirmed,HAPAG Utilized,HAPAG Left,HAPAG Util %,HELLMAN Forecast,HELLMAN Confirmed,HELLMAN Utilized,HELLMAN Left,HELLMAN Util %,ONE Forecast,ONE Confirmed,ONE Utilized,ONE Left,ONE Util %,FML Forecast,FML Confirmed,FML Utilized,FML Left,FML Util %,Total Confirmed,Total Utilized,Util % of Confirmed,Forecast CBM (daily),Actual CBM,Forecast TEUs (daily),Actual TEUs,To Be Arrived,To Be Utilized,Deficit/Surplus
+2026,43,2026-10-19,2026-10-25,100,3300,30,30,26,4,87%,25,20,20,0,100%,20,12,12,0,100%,25,25,20,5,80%,10,15,10,5,67%,102,88,86%,3575,2235,108.3,67.7,41,14,-27
+2026,44,2026-10-26,2026-11-01,79,2607,24,25,0,25,0%,20,20,0,20,0%,16,10,0,10,0%,20,0,0,0,,10,0,0,0,,55,0,0%,0,0,0,0,79,55,-24
+2026,45,2026-11-02,2026-11-08,54,1782,16,0,0,0,,14,0,0,0,,11,0,0,0,,14,0,0,0,,10,0,0,0,,0,0,,0,0,0,0,54,0,-54
+
+DATE-WISE DETAIL
+Week,Date,Day,MAERSK TEUs,HAPAG TEUs,HELLMAN TEUs,ONE TEUs,FML TEUs,Day Total TEUs,Forecast CBM,Forecast TEUs,Actual CBM,Actual TEUs,Actual vs Forecast %
+43,2026-10-19,Mon,10,,,,,10,240,7.3,415,12.6,73%
+43,2026-10-20,Tue,10,,12,,,22,710,21.5,374,11.3,-47%
+43,2026-10-21,Wed,,,,,10,10,241,7.3,694,21,188%
+43,2026-10-22,Thu,,,,12,,12,591,17.9,408,12.4,-31%
+43,2026-10-23,Fri,,18,,,,18,1318,39.9,344,10.4,-74%
+43,2026-10-24,Sat,6,2,,8,,16,40,1.2,,,
+43,2026-10-25,Sun,,,,,,,435,13.2,,,
+44,2026-10-26,Mon,,,,,,,,,,,
+44,2026-10-27,Tue,,,,,,,,,,,
+44,2026-10-28,Wed,,,,,,,,,,,
+44,2026-10-29,Thu,,,,,,,,,,,
+44,2026-10-30,Fri,,,,,,,,,,,
+44,2026-10-31,Sat,,,,,,,,,,,
+44,2026-11-01,Sun,,,,,,,,,,,
+45,2026-11-02,Mon,,,,,,,,,,,
+45,2026-11-03,Tue,,,,,,,,,,,
+45,2026-11-04,Wed,,,,,,,,,,,
+45,2026-11-05,Thu,,,,,,,,,,,
+45,2026-11-06,Fri,,,,,,,,,,,
+45,2026-11-07,Sat,,,,,,,,,,,
+45,2026-11-08,Sun,,,,,,,,,,,

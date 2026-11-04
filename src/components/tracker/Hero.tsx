@@ -2,6 +2,7 @@ import { fmtDate } from '@/lib/logic';
 import type { Tracker } from '@/lib/useTracker';
 import PixelSea from './visuals/PixelSea';
 import SavePill from './SavePill';
+import ThemeToggle from './ThemeToggle';
 import s from './ui.module.css';
 
 export default function Hero({ t }: { t: Pick<Tracker, 'calc' | 'selWeek' | 'cfg' | 'saveState'> }) {
@@ -24,7 +25,10 @@ export default function Hero({ t }: { t: Pick<Tracker, 'calc' | 'selWeek' | 'cfg
             </p>
           </div>
         </div>
-        <SavePill state={saveState} className={s.heroPill} />
+        <div className={s.heroTools}>
+          <SavePill state={saveState} className={s.heroPill} />
+          <ThemeToggle className={s.heroToggle} />
+        </div>
       </div>
     </header>
   );

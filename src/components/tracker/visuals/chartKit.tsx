@@ -85,9 +85,9 @@ export function GroupedBars({ cats, title, summary, onSelect, minGroup = 48, hei
   const maxV = Math.max(0, ...cats.flatMap((c) => c.values));
   const sc = niceScale(maxV);
   const y = (v: number) => mT + plotH - Math.round((v / sc.max) * plotH);
-  const barW = Math.max(4, Math.min(22, Math.floor((gw - 12) / 3) - 2));
+  const barW = Math.max(4, Math.min(28, Math.floor((gw - 12) / 3) - 2));
   const clusterW = barW * 3 + 4;
-  const showVals = barW >= 16;
+  const showVal = (v: number) => v > 0 && fmt(v).length * 8 <= barW + 2;
 
   const activate = (c: Cat) => onSelect && onSelect(c.key);
   const onKey = (e: KeyboardEvent, c: Cat) => {
@@ -95,7 +95,7 @@ export function GroupedBars({ cats, title, summary, onSelect, minGroup = 48, hei
   };
 
   const tc = tip ? cats[tip.i] : null;
-  const tipRight = tip ? tip.x + gw / 2 + 8 + 176 <= svgW : true;
+  const tipRight = tip ? tip.x + gw / 2 + 8 + 196 <= svgW : true;
   const interactive = !!onSelect;
 
   return (
@@ -153,7 +153,7 @@ export function GroupedBars({ cats, title, summary, onSelect, minGroup = 48, hei
                         {bh > 0 && <rect x={bx} y={by} width={barW} height={bh} className={s[SERIES[k].cls]} />}
                         {bh > 0 && k === 0 && <rect x={bx} y={by} width={barW} height={bh} fill={`url(#h${uid})`} />}
                         {bh > 0 && <rect x={bx} y={by} width={barW} height={bh} className={s.outline} />}
-                        {showVals && v > 0 && <text x={bx + barW / 2} y={by - 4} textAnchor="middle" className={s.val}>{fmt(v)}</text>}
+                        {showVal(v) && <text x={bx + barW / 2} y={by - 4} textAnchor="middle" className={s.val}>{fmt(v)}</text>}
                       </g>
                     );
                   })}

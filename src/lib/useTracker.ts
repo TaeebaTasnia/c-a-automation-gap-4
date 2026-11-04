@@ -12,7 +12,7 @@ import {
 } from './logic';
 import { createStore, type Store, type StoreState } from './store';
 
-export type Tab = 'allocation' | 'daily' | 'summary';
+export type Tab = 'allocation' | 'daily' | 'summary' | 'reports';
 export type Data = { cfg: Config; weekly: WeeklyRow[]; daily: DailyMap };
 export type Toast = { id: number; msg: string };
 export type WeeklyField = Exclude<keyof WeeklyRow, 'year' | 'week'>;
@@ -96,7 +96,7 @@ export function useTracker() {
       applyLoaded({ cfg: d.config, weekly: d.weekly, daily: d.daily }, false);
       try {
         const t = window.localStorage.getItem(TAB_KEY);
-        if (t === 'allocation' || t === 'daily' || t === 'summary') setTabState(t);
+        if (t === 'allocation' || t === 'daily' || t === 'summary' || t === 'reports') setTabState(t);
       } catch { /* storage unavailable */ }
       setStatus('ready');
     }).catch((e: unknown) => {
